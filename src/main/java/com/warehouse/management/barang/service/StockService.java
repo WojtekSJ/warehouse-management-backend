@@ -31,13 +31,13 @@ public class StockService {
 
     public Stock addStockShip(StockShipRequestDTO requestDTO) {
         Optional<Stock> stockOptional = stockRepository.findByBarangId(requestDTO.getBarangId());
-
+    
         if (!stockOptional.isPresent()) {
             throw new RuntimeException("Stock not found");
         }
-
+    
         Stock stock = stockOptional.get();
-
+    
         Ship ship = Ship.builder()
                 .barangId(requestDTO.getBarangId())
                 .shipperId(requestDTO.getShipperId())
@@ -45,24 +45,24 @@ public class StockService {
                 .tipe(requestDTO.getTipe())
                 .tanggal(new Date())
                 .build();
-
-        shipRepository.save(ship);
-
+    
         switch (requestDTO.getTipe()) {
             case ShipTipeConstant.TIPE_IN:
+                shipRepository.save(ship);
                 stock.setStok(stock.getStok() + requestDTO.getStock());
                 break;
             case ShipTipeConstant.TIPE_OUT:
                 if (stock.getStok() < requestDTO.getStock()) {
                     throw new RuntimeException("Stock not enough");
                 }
-
+    
+                shipRepository.save(ship);
                 stock.setStok(stock.getStok() - requestDTO.getStock());
                 break;
             default:
-                throw new RuntimeException("Tipe tidak dikenali");
+                throw new RuntimeException("Tipe not found");
         }
-
+        
         return stockRepository.save(stock);
     }
 }
